@@ -1,17 +1,15 @@
 function App() {
   const onSubmit = async () => {
-    const response = await fetch('http://localhost:3000', {
+    const response = await fetch('http://localhost:3000/polls', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
-        query: `
-          query {
-            hello
-          }
-        `,
+        topic: 'What is your favorite color?',
+        votesPerVoter: 2,
+        name: 'Color Poll',
       }),
     });
     const data = await response.json();

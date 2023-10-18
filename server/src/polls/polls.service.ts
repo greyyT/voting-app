@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePollFields, JoinPollFields, RejoinPollFields } from './types';
-import { createPollID, createUserID } from 'utils/idHandler';
-
+import { createPollID, createUserID } from 'src/idHandler';
 @Injectable()
 export class PollsService {
   async createPoll(fields: CreatePollFields) {
