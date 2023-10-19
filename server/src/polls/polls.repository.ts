@@ -88,11 +88,12 @@ export class PollsRepository {
       `Attempting to add a participant with userID/name: ${userID}/${name} to pollID: ${pollID}`,
     );
 
+    const key = `poll:${pollID}`;
     const participantPath = `.participants.${userID}`;
 
     try {
       await this.redisClient.sendCommand(
-        new Command('JSON.SET', ['key', participantPath, JSON.stringify(name)]),
+        new Command('JSON.SET', [key, participantPath, JSON.stringify(name)]),
       );
 
       const currentPoll = await this.getPoll(pollID);
