@@ -1,3 +1,4 @@
+// Service types
 export interface CreatePollFields {
   topic: string;
   votesPerVoter: number;
@@ -10,6 +11,20 @@ export interface JoinPollFields {
 }
 
 export interface RejoinPollFields {
+  pollID: string;
+  userID: string;
+  name: string;
+}
+
+// repository types
+export interface CreatePollData {
+  pollID: string;
+  topic: string;
+  votesPerVoter: number;
+  userID: string;
+}
+
+export interface AddParticipantData {
   pollID: string;
   userID: string;
   name: string;

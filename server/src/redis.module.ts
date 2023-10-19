@@ -33,7 +33,7 @@ export class RedisModule {
       useFactory: async (...args: any[]) => {
         const { connectionOptions, onClientReady } = await useFactory(...args);
 
-        const client = await new IORedis(connectionOptions);
+        const client = new IORedis(connectionOptions);
 
         onClientReady(client);
 
