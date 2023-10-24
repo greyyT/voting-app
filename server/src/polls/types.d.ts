@@ -2,36 +2,47 @@ import { Request } from 'express';
 import { Socket } from 'socket.io';
 
 // Service types
-export interface CreatePollFields {
+export type CreatePollFields = {
   topic: string;
   votesPerVoter: number;
   name: string;
-}
+};
 
-export interface JoinPollFields {
+export type JoinPollFields = {
   pollID: string;
   name: string;
-}
+};
 
-export interface RejoinPollFields {
+export type RejoinPollFields = {
   pollID: string;
   userID: string;
   name: string;
-}
+};
+
+export type AddParticipantFields = {
+  pollID: string;
+  userID: string;
+  name: string;
+};
+
+export type RemoveParticipantData = {
+  pollID: string;
+  userID: string;
+};
 
 // repository types
-export interface CreatePollData {
+export type CreatePollData = {
   pollID: string;
   topic: string;
   votesPerVoter: number;
   userID: string;
-}
+};
 
-export interface AddParticipantData {
+export type AddParticipantData = {
   pollID: string;
   userID: string;
   name: string;
-}
+};
 
 // Guard types
 interface AuthPayload {

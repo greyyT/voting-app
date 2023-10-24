@@ -8,18 +8,17 @@ import IORedis, { Redis, RedisOptions } from 'ioredis';
 
 export const IORedisKey = 'IORedis';
 
-interface RedisModuleOptions {
+type RedisModuleOptions = {
   connectionOptions: RedisOptions;
   onClientReady?: (client: Redis) => void;
-}
+};
 
-interface RedisAsyncModuleOptions
-  extends Pick<ModuleMetadata, 'imports'>,
-    Pick<FactoryProvider, 'inject'> {
+type RedisAsyncModuleOptions = {
   useFactory: (
     ...args: any[]
   ) => Promise<RedisModuleOptions> | RedisModuleOptions;
-}
+} & Pick<ModuleMetadata, 'imports'> &
+  Pick<FactoryProvider, 'inject'>;
 
 @Module({})
 export class RedisModule {
