@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { Nomination } from 'shared';
 import { Socket } from 'socket.io';
 
 // Service types
@@ -44,13 +45,19 @@ export type AddParticipantData = {
   name: string;
 };
 
+export type AddNominationData = {
+  pollID: string;
+  nominationID: string;
+  nomination: Nomination;
+};
+
 // Guard types
-interface AuthPayload {
+export interface AuthPayload {
   userID: string;
   pollID: string;
   name: string;
 }
 
-export interface RequestWithAuth extends Request, AuthPayload {}
+export type RequestWithAuth = Request & AuthPayload;
 
-export interface SocketWithAuth extends Socket, AuthPayload {}
+export type SocketWithAuth = Socket & AuthPayload;
