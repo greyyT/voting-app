@@ -38,7 +38,7 @@ export type SubmitRankingsFields = {
   rankings: NominationID[];
 };
 
-// repository types
+// Repository types
 export type CreatePollData = {
   pollID: string;
   topic: string;
@@ -65,11 +65,11 @@ export type AddnNominationRankingsData = {
 };
 
 // Guard types
-export interface AuthPayload {
+export type AuthPayload = {
   userID: string;
   pollID: string;
   name: string;
-}
+};
 
 export type RequestWithAuth = Request & AuthPayload;
 
