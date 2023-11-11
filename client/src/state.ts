@@ -1,5 +1,8 @@
 import { proxy } from 'valtio';
+import { subscribeKey } from 'valtio/utils';
 import { Poll } from 'shared';
+import { derive } from 'derive-valtio';
+import { getTokenPayload } from './util';
 
 export enum AppPage {
   Welcome = 'welcome',
@@ -8,8 +11,14 @@ export enum AppPage {
   WaitingRoom = 'waiting-room',
 }
 
+type Me = {
+  id: string;
+  name: string;
+};
+
 export type AppState = {
   isLoading: boolean;
+  me?: Me;
   currentPage: AppPage;
   poll?: Poll;
   accessToken?: string;
@@ -19,6 +28,29 @@ const state: AppState = proxy({
   isLoading: false,
   currentPage: AppPage.Welcome,
 });
+
+const stateWithComputed: AppState = derive(
+  {
+    me: (get) => {
+      const accessToken = get(state).accessToken;
+
+      if (!accessToken) {
+        return;
+      }
+
+      const token = getTokenPayload(accessToken);
+
+      return {
+        id: token.sub,
+        name: token.name,
+      };
+    },
+    isAdmin: (get) => (!get(state).me ? false : get(state).me?.id === get(state).poll?.adminID),
+  },
+  {
+    proxy: state,
+  },
+);
 
 const actions = {
   setPage: (page: AppPage): void => {
@@ -41,4 +73,12 @@ const actions = {
   },
 };
 
-export { state, actions };
+subscribeKey(state, 'accessToken', () => {
+  if (state.accessToken && state.poll) {
+    localStorage.setItem('rankr:accessToken', state.accessToken);
+  } else {
+    localStorage.removeItem('rankr:accessToken');
+  }
+});
+
+export { stateWithComputed as state, actions };
