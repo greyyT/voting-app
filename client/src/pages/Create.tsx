@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import CountSelector from '../components/ui/CountSelector';
+import { AppPage, actions } from '../state';
+import { makeRequest } from '../api';
+import { Poll } from 'shared';
 
 const Create: React.FC = () => {
   const [pollTopic, setPollTopic] = useState<string>('');
   const [maxVotes, setMaxVotes] = useState<number>(3);
   const [name, setName] = useState<string>('');
+
+  const [apiError, setApiError] = useState<string>('');
 
   const fieldsValidator = (): boolean => {
     if (pollTopic.length < 1 || pollTopic.length > 100) {
@@ -20,6 +25,35 @@ const Create: React.FC = () => {
     }
 
     return true;
+  };
+
+  const handleCreatePoll = async () => {
+    actions.startLoading();
+    setApiError('');
+
+    const { data, error } = await makeRequest<{ poll: Poll; accessToken: string }>('/polls', {
+      method: 'POST',
+      body: JSON.stringify({
+        topic: pollTopic,
+        votesPerVoter: maxVotes,
+        name,
+      }),
+    });
+
+    console.log(data, error);
+
+    if (error && error.statusCode === 400) {
+      console.log('400 error', error);
+      setApiError('Name and poll topic are both required');
+    } else if (error && error.statusCode !== 400) {
+      setApiError(error.messages[0]);
+    } else {
+      actions.initializePoll(data.poll);
+      actions.setPollAccessToken(data.accessToken);
+      actions.setPage(AppPage.WaitingRoom);
+    }
+
+    actions.stopLoading();
   };
 
   return (
@@ -51,12 +85,13 @@ const Create: React.FC = () => {
             />
           </div>
         </div>
+        {apiError && <p className="text-center text-red-600 font-light mt-8">{apiError}</p>}
       </div>
       <div className="flex flex-col justify-center items-center">
-        <button className="box btn-orange w-32 my-2" onClick={() => console.log('createPoll')} disabled={false}>
+        <button className="box btn-orange w-32 my-2" onClick={handleCreatePoll} disabled={!fieldsValidator()}>
           Create
         </button>
-        <button className="box btn-purple w-32 my-2" onClick={() => console.log('starting over')}>
+        <button className="box btn-purple w-32 my-2" onClick={() => actions.startOver()}>
           Start Over
         </button>
       </div>
