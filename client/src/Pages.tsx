@@ -19,10 +19,10 @@ const Pages: React.FC = () => {
   const currentState = useSnapshot(state);
 
   useEffect(() => {
-    if (currentState.me?.id && !currentState.poll?.isStarted) {
+    if (currentState.me?.id && currentState.poll && !currentState.poll?.isStarted) {
       actions.setPage(AppPage.WaitingRoom);
     }
-  }, [currentState.me?.id, currentState.poll?.isStarted]);
+  }, [currentState.me?.id, currentState.poll, currentState.poll?.isStarted]);
 
   return (
     <>
