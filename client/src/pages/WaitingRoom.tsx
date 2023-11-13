@@ -71,7 +71,7 @@ const WaitingRoom: React.FC = () => {
               <button
                 className="box btn-orange my-2"
                 disabled={!currentState.canStartVote}
-                onClick={() => console.log('add start vote feature')}
+                onClick={() => actions.startVote()}
               >
                 Start Voting
               </button>

@@ -7,12 +7,16 @@ import Welcome from './pages/Welcome';
 import { useSnapshot } from 'valtio';
 import WaitingRoom from './pages/WaitingRoom';
 import { useEffect } from 'react';
+import Voting from './pages/Voting';
+import Results from './pages/Results';
 
 const routeConfig = {
   [AppPage.Welcome]: Welcome,
   [AppPage.Create]: Create,
   [AppPage.Join]: Join,
   [AppPage.WaitingRoom]: WaitingRoom,
+  [AppPage.Voting]: Voting,
+  [AppPage.Results]: Results,
 };
 
 const Pages: React.FC = () => {
@@ -22,7 +26,15 @@ const Pages: React.FC = () => {
     if (currentState.me?.id && currentState.poll && !currentState.poll?.isStarted) {
       actions.setPage(AppPage.WaitingRoom);
     }
-  }, [currentState.me?.id, currentState.poll, currentState.poll?.isStarted]);
+
+    if (currentState.me?.id && currentState.poll?.isStarted) {
+      actions.setPage(AppPage.Voting);
+    }
+
+    if (currentState.me?.id && currentState.hasVoted) {
+      actions.setPage(AppPage.Results);
+    }
+  }, [currentState.me?.id, currentState.poll, currentState.poll?.isStarted, currentState.hasVoted]);
 
   return (
     <>
