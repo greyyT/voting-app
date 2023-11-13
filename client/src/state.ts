@@ -1,6 +1,5 @@
 import { proxy, ref } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
-import { derive } from 'derive-valtio';
 
 import { Poll } from 'shared';
 import { getTokenPayload } from './util';
@@ -31,49 +30,59 @@ type WsErrorUnique = WsError & {
 
 export type AppState = {
   isLoading: boolean;
-  me?: Me;
   currentPage: AppPage;
   poll?: Poll;
   accessToken?: string;
   socket?: Socket;
   wsErrors: WsErrorUnique[];
+  me?: Me;
+  isAdmin?: boolean;
+  nominationCount: number;
+  participantCount: number;
+  canStartVote: boolean;
 };
 
-const state: AppState = proxy({
+const state = proxy<AppState>({
   isLoading: false,
   currentPage: AppPage.Welcome,
   wsErrors: [],
+  get me() {
+    const accessToken = this.accessToken;
+
+    if (!accessToken) {
+      return;
+    }
+
+    const token = getTokenPayload(accessToken);
+
+    return {
+      id: token.sub,
+      name: token.name,
+    };
+  },
+  get isAdmin() {
+    if (!this.me) {
+      return false;
+    }
+
+    return this.me?.id === this.poll?.adminID;
+  },
+  get participantCount() {
+    return Object.keys(this.poll?.participants || {}).length;
+  },
+  get nominationCount() {
+    return Object.keys(this.poll?.nominations || {}).length;
+  },
+  get canStartVote() {
+    const votesPerVoter = this.poll?.votesPerVoter ?? 100;
+
+    return this.nominationCount >= votesPerVoter;
+  },
 });
-
-const stateWithComputed: AppState = derive(
-  {
-    me: (get) => {
-      const accessToken = get(state).accessToken;
-
-      if (!accessToken) {
-        return;
-      }
-
-      const token = getTokenPayload(accessToken);
-
-      return {
-        id: token.sub,
-        name: token.name,
-      };
-    },
-    isAdmin: (get) => (!get(state).me ? false : get(state).me?.id === get(state).poll?.adminID),
-  },
-  {
-    proxy: state,
-  },
-);
 
 const actions = {
   setPage: (page: AppPage): void => {
     state.currentPage = page;
-  },
-  startOver: (): void => {
-    actions.setPage(AppPage.Welcome);
   },
   startLoading: (): void => {
     state.isLoading = true;
@@ -97,6 +106,31 @@ const actions = {
   updatePoll: (poll: Poll): void => {
     state.poll = poll;
   },
+  nominate: (text: string): void => {
+    state.socket?.emit('nominate', { text });
+  },
+  startOver: (): void => {
+    actions.reset();
+    localStorage.removeItem('rankr:accessToken');
+    actions.setPage(AppPage.Welcome);
+  },
+  reset: (): void => {
+    state.socket?.disconnect();
+    state.poll = undefined;
+    state.accessToken = undefined;
+    state.isLoading = false;
+    state.socket = undefined;
+    state.wsErrors = [];
+  },
+  removeNomination: (id: string): void => {
+    state.socket?.emit('remove_nomination', { id });
+  },
+  removeParticipant: (id: string): void => {
+    state.socket?.emit('remove_pariticpant', { id });
+  },
+  startVote: (): void => {
+    state.socket?.emit('start_vote');
+  },
   addWsError: (error: WsError): void => {
     state.wsErrors = [
       ...state.wsErrors,
@@ -119,4 +153,4 @@ subscribeKey(state, 'accessToken', () => {
 
 export type AppActions = typeof actions;
 
-export { stateWithComputed as state, actions };
+export { state, actions };
